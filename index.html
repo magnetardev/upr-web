@@ -149,7 +149,7 @@
       let file = evt.target.files[0];
       await mountFile(file);
       cheerpjCreateDisplay(800, 600, parentEl);
-      cheerpjRunJar("randomizer.jar"); 
+      cheerpjRunJar("/upr-web/randomizer.jar"); 
       document.querySelector('#list-files').disabled = false;
     });
     cheerpjInit();

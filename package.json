@@ -1,0 +1,14 @@
+{
+  "name": "pkmn-randomizer-web",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/magnetardev/upr-web.git",
+  "author": "Magnetar <contact@magnetar.dev>",
+  "license": "MIT",
+  "scripts": {
+    "start": "tailwindcss -o main.css --jit --purge './**/*.html' -w"
+  },
+  "devDependencies": {
+    "tailwindcss": "^2.2.7"
+  }
+}

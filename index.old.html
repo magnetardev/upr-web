@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta property="og:title" content="Universal Pokemon Randomizer Web" />
+    <meta
+      property="og:description"
+      content="A CheerpJ port of the Universal Pokemon Randomizer."
+    />
+    <meta property="og:url" content="https://gh.magnetar.dev/upr-web/" />
+    <meta
+      property="og:image"
+      content="https://opengraph.githubassets.com/2fa3eabd594453abdf575c04949bdc35d464189ef1044ac2146e793575cd7dee/magnetardev/upr-web"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <title>Universal Pokemon Randomizer Web</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        /* -moz-osx-font-smoothing: grayscale; */
+        line-height: 1.5rem;
+        padding: 1rem;
+      }
+
+      hr {
+        height: 1px;
+        border: none;
+        background-color: rgba(141, 141, 141, 0.5);
+      }
+
+      #list-files {
+        margin-top: 1rem;
+      }
+
+      li button {
+        appearance: none;
+        font: inherit;
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+        text-decoration: underline;
+        color: blue;
+      }
+
+      ol li::marker {
+        font-weight: 500;
+      }
+      label span {
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Universal Pokemon Randomizer Web</h1>
+    <p>
+      This is a CheerpJ-port of the
+      <a href="https://pokehacks.dabomstew.com/randomizer/" target="_blank"
+        >Universal Pokemon Randomizer</a
+      >. This port is far from perfect, and is not very intuitive. If you'd like
+      to help improve this, the source is available at
+      <a href="https://github.com/magnetardev/upr-web"
+        >https://github.com/magnetardev/upr-web</a
+      >
+      <br /><br /><i>Please follow the guide below to ease the process.</i>
+    </p>
+
+    <hr />
+
+    <h4>Guide</h4>
+    <ol>
+      <li>Upload a ROM to be randomized</li>
+      <li>Once the randomizer loads, press "Open ROM"</li>
+      <li>Look in /str, and open the ROM you uploaded.</li>
+      <li>Configure the randomizer however you like</li>
+      <li>Press "Randomize (Save)"</li>
+      <li>Save the file in /files, you can name it whatever you like</li>
+      <li>
+        Currently there is no way to download the spoilers file, so press "No"
+      </li>
+      <li>Click "Done"</li>
+      <li>
+        Finally, in the "File Access" section (right below here), click List
+        Files
+      </li>
+      <li>Download the randomized ROM!</li>
+    </ol>
+
+    <hr />
+    <h4>File Access</h4>
+    <label for="rom-upload">
+      <span>ROM: </span>
+      <input name="rom-upload" type="file" id="rom-upload" />
+    </label>
+    <br />
+    <button id="list-files" disabled>List Files</button>
+    <ul id="files"></ul>
+    <hr />
+    <div class="display"></div>
+  </body>
+  <script src="https://cjrtnc.leaningtech.com/2.2/loader.js"></script>
+  <script type="module">
+    import {
+      openDB,
+      deleteDB,
+      wrap,
+      unwrap,
+    } from "https://unpkg.com/idb?module";
+    let db;
+
+    async function listFiles() {
+      db = await openDB("cjFS_/files/", 1);
+      return await db.transaction("files", "readonly").store.getAll();
+    }
+
+    function downloadFile(file, name) {
+      const blob = new Blob([file], { type: "application/octet-stream" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = name;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    document
+      .querySelector("#list-files")
+      .addEventListener("click", async () => {
+        const files = await listFiles();
+        let dir = files[0];
+        const nodeIDs = new Map(
+          dir.contents.map((file, idx) => [idx + 2, file])
+        );
+        console.log(nodeIDs);
+        document.querySelector("#files").innerHTML = "";
+        for (let i = 0, len = files.length; i < len; i++) {
+          const file = files[i];
+          if (file.type !== "file") continue;
+          const fileName = (nodeIDs.get(file.inodeId) || "").replace("/", "");
+          const li = document.createElement("li");
+          const button = document.createElement("button");
+          button.innerHTML = fileName;
+          button.addEventListener("click", async () => {
+            downloadFile(file.contents, fileName);
+          });
+          li.appendChild(button);
+          document.querySelector("#files").appendChild(li);
+        }
+      });
+
+    function readFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(file);
+        reader.onload = function () {
+          const arrayBuffer = reader.result;
+          const bytes = new Uint8Array(arrayBuffer);
+          resolve(bytes);
+        };
+        reader.onerror = function (e) {
+          reject(e);
+        };
+      });
+    }
+
+    async function mountFile(file) {
+      const filepath = "/str/" + file.name;
+      const bytes = await readFile(file);
+      cheerpjAddStringFile(filepath, bytes);
+      return filepath;
+    }
+
+    const parentEl = document.querySelector(".display");
+    const fileEl = document.getElementById("rom-upload");
+    fileEl.addEventListener("change", async (evt) => {
+      let file = evt.target.files[0];
+      await mountFile(file);
+      cheerpjCreateDisplay(800, 600, parentEl);
+      cheerpjRunJar("randomizer.jar");
+      document.querySelector("#list-files").disabled = false;
+    });
+    cheerpjInit();
+  </script>
+</html>

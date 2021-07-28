@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Universal Pokémon Randomizer Web</title>
+    <link rel="stylesheet" href="main.css" />
+  </head>
+  <body>
+    <header class="text-center py-24 px-4 border-b-[1px]">
+      <div class="container mx-auto">
+        <h1 class="text-4xl font-bold">Universal Pokémon Randomizer</h1>
+        <p class="text-2xl text-gray-400 mt-2">
+          Randomize generations 1-5, right in your browser.
+        </p>
+      </div>
+    </header>
+    <div class="container mx-auto px-4">
+      <form id="randomizer">
+        <div
+          class="
+            sticky
+            mx-[-1rem]
+            px-4
+            bg-[rgba(255,255,255,0.8)]
+            backdrop-filter backdrop-blur-lg
+            border-b-[1px]
+            top-0
+            py-4
+            flex
+            items-center
+            justify-between
+          "
+        >
+          <label for="rom">
+            <span class="mr-4">ROM: </span>
+            <input name="rom" type="file" id="rom-upload" />
+          </label>
+          <button
+            type="submit"
+            class="px-4 py-2 text-white bg-blue-500 rounded-lg"
+          >
+            Randomize
+          </button>
+        </div>
+      </form>
+    </div>
+    <script src="https://cjrtnc.leaningtech.com/2.2/loader.js"></script>
+    <script type="module">
+      import { randomize } from "./main.js";
+
+      const parentEl = document.createElement("div");
+      cheerpjInit();
+      cheerpjCreateDisplay(-1, -1, parentEl);
+
+      const formEl = document.querySelector("form#randomizer");
+      formEl.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const data = new FormData(formEl);
+        for (const ent of data.entries()) {
+          console.log(ent);
+        }
+        randomize(
+          data.get("rom"),
+          "�XAQgEAQjuAfEB9AEEACQeJAICFAAAFABABAABAAAAAAAAAgAyE1Bva2Vtb24gQmxhY2sgMiAoVSkAJmjy61/f0Q=="
+        );
+      });
+    </script>
+  </body>
+</html>
